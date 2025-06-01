@@ -1,0 +1,18 @@
+{
+  "name": "cosimir-una-api",
+  "version": "1.0.0",
+  "description": "API REST construida con Node.js, Express y MySQL.",
+  "main": "servidor.js",
+  "scripts": {
+    "start": "node servidor.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.1"
+  }
+}
