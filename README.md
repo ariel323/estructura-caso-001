@@ -1,6 +1,6 @@
 # cosimir-una-api
 
-API REST construida con Node.js, Express y MySQL.
+API REST construida con Node.js y MySQL.
 
 ## Tabla de Contenidos
 
