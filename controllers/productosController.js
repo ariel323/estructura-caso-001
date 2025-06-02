@@ -1,12 +1,22 @@
 const connection = require("../config/db");
 const { sendJson } = require("../utils/response");
 
+function parseBody(req, callback) {
+  let body = "";
+  req.on("data", (chunk) => (body += chunk));
+  req.on("end", () => {
+    try {
+      const parsed = JSON.parse(body);
+      callback(null, parsed);
+    } catch (err) {
+      callback(err);
+    }
+  });
+}
+
 function getAll(req, res) {
   connection.query("SELECT * FROM product", (err, results) => {
-    if (err) {
-      sendJson(res, 500, { error: "Error en la base de datos" });
-      return;
-    }
+    if (err) return sendJson(res, 500, { error: "Error en la base de datos" });
     sendJson(res, 200, results);
   });
 }
@@ -26,6 +36,99 @@ function getOne(req, res) {
   );
 }
 
+function create(req, res) {
+  parseBody(req, (err, body) => {
+    if (err) return sendJson(res, 400, { error: "JSON inválido" });
+    const { name, precio, description } = body;
+    if (!name || typeof precio !== "number")
+      return sendJson(res, 400, { error: "Datos inválidos" });
+
+    connection.query(
+      "INSERT INTO product (name, precio, description) VALUES (?, ?, ?)",
+      [name, precio, description || null],
+      (err, result) => {
+        if (err) return sendJson(res, 500, { error: "Error al insertar" });
+        sendJson(res, 201, {
+          data: { id: result.insertId, name, precio, description },
+        });
+      }
+    );
+  });
+}
+
+function updateFull(req, res) {
+  const id = req.params.id;
+  parseBody(req, (err, body) => {
+    if (err) return sendJson(res, 400, { error: "JSON inválido" });
+    const { name, precio, description } = body;
+    if (!name || typeof precio !== "number")
+      return sendJson(res, 400, { error: "Datos inválidos" });
+
+    connection.query(
+      "UPDATE product SET name = ?, precio = ?, description = ? WHERE id = ?",
+      [name, precio, description || null, id],
+      (err, result) => {
+        if (err) return sendJson(res, 500, { error: "Error al actualizar" });
+        if (result.affectedRows === 0)
+          return sendJson(res, 404, { error: "Producto no encontrado" });
+
+        sendJson(res, 200, { data: { id, name, precio, description } });
+      }
+    );
+  });
+}
+
+function updatePartial(req, res) {
+  const id = req.params.id;
+  parseBody(req, (err, body) => {
+    if (err) return sendJson(res, 400, { error: "JSON inválido" });
+
+    const fields = [];
+    const values = [];
+
+    if (body.name !== undefined) {
+      fields.push("name = ?");
+      values.push(body.name);
+    }
+    if (body.precio !== undefined && typeof body.precio === "number") {
+      fields.push("precio = ?");
+      values.push(body.precio);
+    }
+    if (body.description !== undefined) {
+      fields.push("description = ?");
+      values.push(body.description);
+    }
+
+    if (fields.length === 0) {
+      return sendJson(res, 400, {
+        error: "No hay campos válidos para actualizar",
+      });
+    }
+
+    values.push(id);
+
+    const sql = `UPDATE product SET ${fields.join(", ")} WHERE id = ?`;
+    connection.query(sql, values, (err, result) => {
+      if (err)
+        return sendJson(res, 500, {
+          error: "Error al actualizar parcialmente",
+        });
+      if (result.affectedRows === 0)
+        return sendJson(res, 404, { error: "Producto no encontrado" });
+
+      connection.query(
+        "SELECT * FROM product WHERE id = ?",
+        [id],
+        (err, results) => {
+          if (err)
+            return sendJson(res, 500, { error: "Error al recuperar datos" });
+          sendJson(res, 200, { data: results[0] });
+        }
+      );
+    });
+  });
+}
+
 function remove(req, res) {
   const id = req.params.id;
   connection.query("DELETE FROM product WHERE id = ?", [id], (err, result) => {
@@ -37,8 +140,27 @@ function remove(req, res) {
   });
 }
 
+function removePrecio(req, res) {
+  const id = req.params.id;
+  connection.query(
+    "UPDATE product SET precio = NULL WHERE id = ?",
+    [id],
+    (err, result) => {
+      if (err) return sendJson(res, 500, { error: "Error al eliminar precio" });
+      if (result.affectedRows === 0)
+        return sendJson(res, 404, { error: "Producto no encontrado" });
+
+      sendJson(res, 200, { data: { mensaje: "Precio eliminado", id } });
+    }
+  );
+}
+
 module.exports = {
   getAll,
   getOne,
+  create,
+  updateFull,
+  updatePartial,
   remove,
+  removePrecio,
 };
