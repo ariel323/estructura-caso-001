@@ -39,17 +39,16 @@ function getOne(req, res) {
 function create(req, res) {
   parseBody(req, (err, body) => {
     if (err) return sendJson(res, 400, { error: "JSON inválido" });
-    const { name, precio, description } = body;
-    if (!name || typeof precio !== "number")
-      return sendJson(res, 400, { error: "Datos inválidos" });
+    const { name, description } = body;
+    if (!name) return sendJson(res, 400, { error: "Datos inválidos" });
 
     connection.query(
-      "INSERT INTO product (name, precio, description) VALUES (?, ?, ?)",
-      [name, precio, description || null],
+      "INSERT INTO product (name, description) VALUES (?, ?)",
+      [name, description || null],
       (err, result) => {
         if (err) return sendJson(res, 500, { error: "Error al insertar" });
         sendJson(res, 201, {
-          data: { id: result.insertId, name, precio, description },
+          data: { id: result.insertId, name, description },
         });
       }
     );
@@ -60,19 +59,18 @@ function updateFull(req, res) {
   const id = req.params.id;
   parseBody(req, (err, body) => {
     if (err) return sendJson(res, 400, { error: "JSON inválido" });
-    const { name, precio, description } = body;
-    if (!name || typeof precio !== "number")
-      return sendJson(res, 400, { error: "Datos inválidos" });
+    const { name, description } = body;
+    if (!name) return sendJson(res, 400, { error: "Datos inválidos" });
 
     connection.query(
-      "UPDATE product SET name = ?, precio = ?, description = ? WHERE id = ?",
-      [name, precio, description || null, id],
+      "UPDATE product SET name = ?, description = ? WHERE id = ?",
+      [name, description || null, id],
       (err, result) => {
         if (err) return sendJson(res, 500, { error: "Error al actualizar" });
         if (result.affectedRows === 0)
           return sendJson(res, 404, { error: "Producto no encontrado" });
 
-        sendJson(res, 200, { data: { id, name, precio, description } });
+        sendJson(res, 200, { data: { id, name, description } });
       }
     );
   });
@@ -89,10 +87,6 @@ function updatePartial(req, res) {
     if (body.name !== undefined) {
       fields.push("name = ?");
       values.push(body.name);
-    }
-    if (body.precio !== undefined && typeof body.precio === "number") {
-      fields.push("precio = ?");
-      values.push(body.precio);
     }
     if (body.description !== undefined) {
       fields.push("description = ?");
@@ -140,21 +134,6 @@ function remove(req, res) {
   });
 }
 
-function removePrecio(req, res) {
-  const id = req.params.id;
-  connection.query(
-    "UPDATE product SET precio = NULL WHERE id = ?",
-    [id],
-    (err, result) => {
-      if (err) return sendJson(res, 500, { error: "Error al eliminar precio" });
-      if (result.affectedRows === 0)
-        return sendJson(res, 404, { error: "Producto no encontrado" });
-
-      sendJson(res, 200, { data: { mensaje: "Precio eliminado", id } });
-    }
-  );
-}
-
 module.exports = {
   getAll,
   getOne,
@@ -162,5 +141,4 @@ module.exports = {
   updateFull,
   updatePartial,
   remove,
-  removePrecio,
 };
