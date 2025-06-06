@@ -39,8 +39,8 @@ function getOne(req, res) {
 function create(req, res) {
   parseBody(req, (err, body) => {
     if (err) return sendJson(res, 400, { error: "JSON inválido" });
-    const { name, description } = body;
-    if (!name || !name.trim())
+    const { name, precio, description } = body;
+    if (!name || typeof precio !== "number")
       return sendJson(res, 400, { error: "Datos inválidos" });
 
     connection.query(
