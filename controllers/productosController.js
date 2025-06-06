@@ -42,6 +42,8 @@ function create(req, res) {
     const { name, description } = body;
     if (!name || !name.trim())
       return sendJson(res, 400, { error: "Datos inválidos" });
+    if (description !== undefined && typeof description !== "string")
+      return sendJson(res, 400, { error: "Descripción inválida" });
 
     connection.query(
       "INSERT INTO product (name, description) VALUES (?, ?)",
@@ -61,7 +63,10 @@ function updateFull(req, res) {
   parseBody(req, (err, body) => {
     if (err) return sendJson(res, 400, { error: "JSON inválido" });
     const { name, description } = body;
-    if (!name) return sendJson(res, 400, { error: "Datos inválidos" });
+    if (!name || !name.trim())
+      return sendJson(res, 400, { error: "Datos inválidos" });
+    if (description !== undefined && typeof description !== "string")
+      return sendJson(res, 400, { error: "Descripción inválida" });
 
     connection.query(
       "UPDATE product SET name = ?, description = ? WHERE id = ?",
@@ -81,6 +86,13 @@ function updatePartial(req, res) {
   const id = req.params.id;
   parseBody(req, (err, body) => {
     if (err) return sendJson(res, 400, { error: "JSON inválido" });
+
+    if (
+      body.description !== undefined &&
+      typeof body.description !== "string"
+    ) {
+      return sendJson(res, 400, { error: "Descripción inválida" });
+    }
 
     const fields = [];
     const values = [];
