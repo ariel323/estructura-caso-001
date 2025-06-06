@@ -130,6 +130,16 @@ cosimir-una-api/
 ### Obtener un producto por ID
 
 - **GET** `/product/1`
+- **Respuesta:**
+  ```json
+  {
+    "data": {
+      "id": 1,
+      "name": "Producto 1",
+      "description": "Descripción"
+    }
+  }
+  ```
 
 ### Crear un producto
 
@@ -141,8 +151,11 @@ cosimir-una-api/
     "description": "Descripción opcional"
   }
   ```
+- **Errores posibles:**
+  - `{ "error": "Datos inválidos" }` si falta el campo `name`.
+  - `{ "error": "JSON inválido" }` si el JSON está mal formado.
 
-### Actualizar un producto (PUT)
+### Actualizar completamente un producto
 
 - **PUT** `/product/1`
 - **Body (JSON):**
@@ -152,8 +165,11 @@ cosimir-una-api/
     "description": "Nueva descripción"
   }
   ```
+- **Errores posibles:**
+  - `{ "error": "Datos inválidos" }` si falta el campo `name`.
+  - `{ "error": "Producto no encontrado" }` si el ID no existe.
 
-### Actualización parcial (PATCH)
+### Actualización parcial de un producto
 
 - **PATCH** `/product/1`
 - **Body (JSON):**
@@ -162,10 +178,24 @@ cosimir-una-api/
     "description": "Solo actualiza la descripción"
   }
   ```
+- **Errores posibles:**
+  - `{ "error": "No hay campos válidos para actualizar" }` si no se envía ningún campo válido.
+  - `{ "error": "Producto no encontrado" }` si el ID no existe.
 
 ### Eliminar un producto
 
 - **DELETE** `/product/1`
+- **Respuesta:**
+  ```json
+  {
+    "data": {
+      "mensaje": "Producto eliminado",
+      "id": 1
+    }
+  }
+  ```
+- **Errores posibles:**
+  - `{ "error": "Producto no encontrado" }` si el ID no existe.
 
 ---
 
