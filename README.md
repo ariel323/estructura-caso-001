@@ -1,66 +1,78 @@
 # cosimir-una-api
 
-API REST construida con Node.js, Express y MySQL.
+API RESTful desarrollada en Node.js puro para la gestión de productos en una base de datos MySQL.
+
+---
 
 ## Tabla de Contenidos
 
 - [Descripción](#descripción)
-- [Requisitos](#requisitos)
+- [Tecnologías](#tecnologías)
 - [Instalación](#instalación)
 - [Configuración](#configuración)
 - [Estructura del Proyecto](#estructura-del-proyecto)
-- [Uso](#uso)
-- [Rutas Principales](#rutas-principales)
-- [Pruebas](#pruebas)
-- [Contribución](#contribución)
+- [Uso de la API](#uso-de-la-api)
+- [Ejemplos de Peticiones](#ejemplos-de-peticiones)
+- [Notas](#notas)
 - [Licencia](#licencia)
 
 ---
 
 ## Descripción
 
-Este proyecto es una API RESTful que permite gestionar recursos almacenados en una base de datos MySQL. Está estructurada para facilitar la escalabilidad y el mantenimiento, siguiendo buenas prácticas de desarrollo backend.
+Este proyecto implementa una API RESTful para la gestión de productos, permitiendo operaciones CRUD (crear, leer, actualizar, eliminar). Está construido sin frameworks adicionales, utilizando únicamente módulos nativos de Node.js y el paquete `mysql2` para la conexión a la base de datos.
 
 ---
 
-## Requisitos
+## Tecnologías
 
-- Node.js >= 14.x
-- MySQL >= 5.7
+- Node.js
+- MySQL
 - npm
+- [mysql2](https://www.npmjs.com/package/mysql2)
+- [dotenv](https://www.npmjs.com/package/dotenv)
 
 ---
 
 ## Instalación
 
-1. Clona el repositorio:
+1. **Clona el repositorio:**
 
-   ```
+   ```sh
    git clone https://github.com/tu_usuario/cosimir-una-api.git
    cd cosimir-una-api
    ```
 
-2. Instala las dependencias:
-   ```
+2. **Instala las dependencias:**
+
+   ```sh
    npm install
    ```
 
----
-
-## Configuración
-
-1. Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
+3. **Configura las variables de entorno:**
+   Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
 
    ```
    DB_HOST=localhost
    DB_PORT=3306
    DB_USER=tu_usuario
    DB_PASSWORD=tu_contraseña
-   DB_NAME=nombre_de_tu_base_de_datos
+   DB_NAME=tienda
    PORT=3000
    ```
 
-2. Asegúrate de tener la base de datos creada y configurada correctamente.
+4. **Crea la base de datos y la tabla:**
+
+   ```sql
+   CREATE DATABASE tienda;
+   USE tienda;
+
+   CREATE TABLE product (
+     id INT PRIMARY KEY AUTO_INCREMENT,
+     name VARCHAR(255) NOT NULL,
+     description TEXT
+   );
+   ```
 
 ---
 
@@ -69,73 +81,102 @@ Este proyecto es una API RESTful que permite gestionar recursos almacenados en u
 ```
 cosimir-una-api/
 │
-├── config/           # Configuración de la base de datos y variables de entorno
+├── config/
 │   └── db.js
-├── controllers/      # Lógica de negocio de la API
-├── middlewares/      # Middlewares personalizados
-├── models/           # Modelos y acceso a datos
-├── routes/           # Definición de rutas de la API
-├── tests/            # Pruebas unitarias y de integración
-├── .env              # Variables de entorno (NO subir a git)
-├── .gitignore
+├── controllers/
+│   └── productosController.js
+├── routes/
+│   └── productosRoutes.js
+├── utils/
+│   └── response.js
+├── server.js
 ├── package.json
-├── README.md
-└── server.js         # Punto de entrada de la aplicación
+├── .env
+└── README.md
 ```
 
 ---
 
-## Uso
+## Uso de la API
 
-Inicia el servidor de desarrollo:
+1. **Inicia el servidor:**
 
-```
-npm start
-```
+   ```sh
+   npm start
+   ```
 
-El servidor se ejecutará en el puerto definido en tu archivo `.env` (por defecto, 3000).
+   El servidor escuchará en `http://localhost:3000` (o el puerto definido en `.env`).
 
----
-
-## Rutas Principales
-
-Ejemplo de rutas (ajusta según tus recursos):
-
-- `GET    /api/usuarios` → Lista todos los usuarios
-- `POST   /api/usuarios` → Crea un nuevo usuario
-- `GET    /api/usuarios/:id` → Obtiene un usuario por ID
-- `PUT    /api/usuarios/:id` → Actualiza un usuario por ID
-- `DELETE /api/usuarios/:id` → Elimina un usuario por ID
+2. **Realiza peticiones HTTP** usando Postman, Insomnia o cualquier cliente HTTP.
 
 ---
 
-## Pruebas
+## Ejemplos de Peticiones
 
-Para ejecutar las pruebas (si tienes configurado Jest, Mocha, etc.):
+### Obtener todos los productos
 
-```
-npm test
-```
+- **GET** `/product`
+- **Respuesta:**
+  ```json
+  [
+    {
+      "id": 1,
+      "name": "Producto 1",
+      "description": "Descripción"
+    }
+  ]
+  ```
 
----
+### Obtener un producto por ID
 
-## Contribución
+- **GET** `/product/1`
 
-1. Haz un fork del repositorio.
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`).
-3. Haz commit de tus cambios (`git commit -am 'Agrega nueva funcionalidad'`).
-4. Haz push a la rama (`git push origin feature/nueva-funcionalidad`).
-5. Abre un Pull Request.
+### Crear un producto
 
----
+- **POST** `/product`
+- **Body (JSON):**
+  ```json
+  {
+    "name": "Nuevo producto",
+    "description": "Descripción opcional"
+  }
+  ```
 
-## Licencia
+### Actualizar un producto (PUT)
 
-Este proyecto está bajo la licencia MIT.
+- **PUT** `/product/1`
+- **Body (JSON):**
+  ```json
+  {
+    "name": "Producto actualizado",
+    "description": "Nueva descripción"
+  }
+  ```
+
+### Actualización parcial (PATCH)
+
+- **PATCH** `/product/1`
+- **Body (JSON):**
+  ```json
+  {
+    "description": "Solo actualiza la descripción"
+  }
+  ```
+
+### Eliminar un producto
+
+- **DELETE** `/product/1`
 
 ---
 
 ## Notas
 
-- Recuerda no subir tu archivo `.env` al repositorio.
-- Si tienes dudas, revisa los comentarios en el código para entender la funcionalidad de cada módulo.
+- El puerto `3306` es solo para la base de datos MySQL. El servidor Node.js escucha en el puerto `3000` por defecto.
+- No subas tu archivo `.env` a ningún repositorio público.
+- Puedes extender la API agregando nuevas rutas y controladores según tus necesidades.
+
+---
+
+## Licencia
+
+MIT
