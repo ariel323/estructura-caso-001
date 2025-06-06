@@ -38,6 +38,13 @@ function handleProductosRoutes(req, res) {
     req.params = req.params || {};
     req.params.id = Number(match[1]);
 
+    // Validación de id numérico
+    if (isNaN(req.params.id)) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "ID inválido" }));
+      return;
+    }
+
     if (method === "HEAD") {
       // Consulta solo para saber si existe el producto
       connection.query(
