@@ -45,14 +45,29 @@ function create(req, res) {
     if (description !== undefined && typeof description !== "string")
       return sendJson(res, 400, { error: "Descripción inválida" });
 
+    // Verifica si ya existe un producto con el mismo nombre
     connection.query(
-      "INSERT INTO product (name, description) VALUES (?, ?)",
-      [name, description || null],
-      (err, result) => {
-        if (err) return sendJson(res, 500, { error: "Error al insertar" });
-        sendJson(res, 201, {
-          data: { id: result.insertId, name, description },
-        });
+      "SELECT id FROM product WHERE name = ?",
+      [name],
+      (err, results) => {
+        if (err)
+          return sendJson(res, 500, { error: "Error en la base de datos" });
+        if (results.length > 0)
+          return sendJson(res, 409, {
+            error: "Ya existe un producto con ese nombre",
+          });
+
+        // Si no existe, inserta el producto
+        connection.query(
+          "INSERT INTO product (name, description) VALUES (?, ?)",
+          [name, description || null],
+          (err, result) => {
+            if (err) return sendJson(res, 500, { error: "Error al insertar" });
+            sendJson(res, 201, {
+              data: { id: result.insertId, name, description },
+            });
+          }
+        );
       }
     );
   });
@@ -143,7 +158,9 @@ function remove(req, res) {
     if (result.affectedRows === 0)
       return sendJson(res, 404, { error: "Producto no encontrado" });
 
-    sendJson(res, 200, { data: { mensaje: "Producto eliminado", id } });
+    // 204 No Content: Eliminado exitosamente, sin cuerpo
+    res.writeHead(204);
+    res.end();
   });
 }
 
