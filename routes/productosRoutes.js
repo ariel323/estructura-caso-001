@@ -29,7 +29,22 @@ function handleProductosRoutes(req, res) {
       return;
     }
     if (method === "GET") return getAll(req, res);
-    if (method === "POST") return create(req, res);
+    if (method === "POST") {
+      // Validar Content-Type
+      if (req.headers["content-type"] !== "application/json") {
+        res.writeHead(415, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Tipo de contenido no soportado" }));
+        return;
+      }
+      return create(req, res);
+    }
+    // Método no permitido
+    res.writeHead(405, {
+      "Content-Type": "application/json",
+      Allow: "GET,POST,HEAD,OPTIONS",
+    });
+    res.end(JSON.stringify({ error: "Método no permitido" }));
+    return;
   }
 
   // HEAD y OPTIONS para /product/:id
@@ -72,11 +87,34 @@ function handleProductosRoutes(req, res) {
       return;
     }
     if (method === "GET") return getOne(req, res);
-    if (method === "PUT") return updateFull(req, res);
-    if (method === "PATCH") return updatePartial(req, res);
+    if (method === "PUT") {
+      if (req.headers["content-type"] !== "application/json") {
+        res.writeHead(415, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Tipo de contenido no soportado" }));
+        return;
+      }
+      return updateFull(req, res);
+    }
+    if (method === "PATCH") {
+      if (req.headers["content-type"] !== "application/json") {
+        res.writeHead(415, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Tipo de contenido no soportado" }));
+        return;
+      }
+      return updatePartial(req, res);
+    }
     if (method === "DELETE") return remove(req, res);
+
+    // Método no permitido
+    res.writeHead(405, {
+      "Content-Type": "application/json",
+      Allow: "GET,PUT,PATCH,DELETE,HEAD,OPTIONS",
+    });
+    res.end(JSON.stringify({ error: "Método no permitido" }));
+    return;
   }
 
+  // 404 para rutas no encontradas
   res.writeHead(404, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ error: "Ruta no encontrada" }));
 }
