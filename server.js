@@ -2,6 +2,7 @@ const http = require("http");
 const { handleProductosRoutes } = require("./routes/productosRoutes");
 
 const server = http.createServer((req, res) => {
+  res.setHeader("Content-Type", "application/json");
   handleProductosRoutes(req, res);
 });
 
